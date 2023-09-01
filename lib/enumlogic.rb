@@ -20,7 +20,7 @@ module Enumlogic
   #   c.kind_key # :apple
   #   c.kind_text # "apple" or "Apple" if you gave a hash with a user friendly text value
   #   c.enum?(:kind) # true
-  def enum(field, values, options = {})
+  def enumlogic_enum(field, values, options = {})
     values_hash = if values.is_a?(Array)
       hash = {}
       values.each { |value| hash[value] = value }
@@ -61,9 +61,23 @@ module Enumlogic
     validates_inclusion_of field, :in => values_array, :message => options[:message], :allow_nil => options[:allow_nil], :if => options[:if]
   end
 
-  def enum?(name)
+  def enumlogic_enum?(name)
     method_defined?("#{name}_key")
   end
 end
 
+module Enumlogic::ShortEnumMethods
+  def enum(field, values, options = {})
+    enumlogic_enum(field, values, options)
+  end
+
+  def enum?(name)
+    enumlogic_enum?(name)
+  end
+end
+
 ActiveRecord::Base.extend(Enumlogic)
+
+unless ActiveRecord::Base.instance_methods.include? :enum
+  ActiveRecord::Base.extend(Enumlogic::ShortEnumMethods)
+end
